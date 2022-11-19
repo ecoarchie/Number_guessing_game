@@ -37,18 +37,22 @@ RANDOM_NUMBER=$((1 + $RANDOM % 1000))
 
 echo -e "\nGuess the secret number between 1 and 1000:"
 
+GUESS_COUNT=0
+
 while :
 
 do
   read USER_GUESS
-  UPDATE_GUESSES_RESULT=$($PSQL "UPDATE games SET number_of_guesses = number_of_guesses + 1 WHERE game_id = $GAME_ID")
-  
+  # UPDATE_GUESSES_RESULT=$($PSQL "UPDATE games SET number_of_guesses = number_of_guesses + 1 WHERE game_id = $GAME_ID")
+  ((GUESS_COUNT = GUESS_COUNT + 1))
+
   if [[ ! $USER_GUESS =~ ^[0-9]+$ ]] || [[ -z $USER_GUESS ]]
   then
     echo -e "\nThat is not an integer, guess again:"
   else
     if [[ $USER_GUESS -eq $RANDOM_NUMBER ]]
     then
+      INSERT_GUESS=$($PSQL "UPDATE games SET number_of_guesses = $GUESS_COUNT WHERE game_id = $GAME_ID")
       break
     fi
 
@@ -65,5 +69,4 @@ do
 done
 
 # number guessed
-NUMBER_OF_GUESSES=$($PSQL "SELECT number_of_guesses FROM games WHERE game_id = $GAME_ID")
-echo -e "\nYou guessed it in $(echo $NUMBER_OF_GUESSES | sed -r 's/^ *| *$//g') tries. The secret number was $RANDOM_NUMBER. Nice job!"
+echo -e "You guessed it in $(echo $GUESS_COUNT | sed -r 's/^ *| *$//g') tries. The secret number was $RANDOM_NUMBER. Nice job!"
